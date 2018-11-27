@@ -24,6 +24,7 @@ event_duration_sum = 0.0
 osd_channel_id = nil
 experiment_start_time = 0.0
 filename_suffix = ""
+config_dialog = nil
 
 html_content = ""
 
@@ -179,6 +180,26 @@ function create_dialog()
 
 end
 
+function apply_configuration()
+    config_dialog:delete()
+    create_dialog()
+end
+
+function create_config_dialog()
+    config_dialog = vlc.dialog("Timestamper configuration")
+
+    config_dialog:add_label("event labels (comma separated)", 1, 1, 1, 1)
+    event_labels_input = config_dialog:add_text_input(event_labels, 2, 1, 1, 1)
+
+    config_dialog:add_label("overall duration limit (seconds)", 1, 2, 1, 1)
+    overall_duration_limit_input = config_dialog:add_text_input(overall_duration_limit, 2, 2, 1, 1)
+
+    config_dialog:add_label("event duration limit (seconds)", 1, 3, 1, 1)
+    event_duration_limit_input = config_dialog:add_text_input(event_duration_limit, 2, 3, 1, 1)
+
+    config_dialog:add_button("Apply", apply_configuration, 3, 1, 1, 1)
+end
+
 
 function key_press( var, old, new, data )
     local key = new
@@ -193,7 +214,7 @@ end
 
 function activate()
     vlc.msg.dbg("timestamper starts")
-    create_dialog()
+    create_config_dialog()
 end
 
 function deactivate()
