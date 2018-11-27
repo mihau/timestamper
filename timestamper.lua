@@ -28,6 +28,13 @@ config_dialog = nil
 
 html_content = ""
 
+-- globals for configuration
+event_labels_str = ""
+event_labels = {}
+
+overall_duration_limit = 0
+event_duration_limit = 0
+
 -- TODO: finish compensation
 
 
@@ -180,7 +187,40 @@ function create_dialog()
 
 end
 
+function split(inputstr, sep)
+        if sep == nil then
+                sep = "%s"
+        end
+        local t={} ; i=1
+        for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+                t[i] = str
+                i = i + 1
+        end
+        return t
+end
+
+function serialize(t)
+    local serializedValues = {}
+    local value, serializedValue
+    for i=1,#t do
+        value = t[i]
+        serializedValue = type(value)=='table' and serialize(value) or value
+        table.insert(serializedValues, serializedValue)
+    end
+    return string.format("{ %s }", table.concat(serializedValues, ', ') )
+end
+
 function apply_configuration()
+    event_labels_str = event_labels_input:get_text()
+    overall_duration_limit = tonumber(overall_duration_limit_input:get_text())
+    event_duration_limit = tonumber(event_duration_limit_input:get_text())
+
+    event_labels = split(event_labels_str, ",") 
+    vlc.msg.dbg(serialize(event_labels))
+    vlc.msg.dbg(overall_duration_limit)
+    vlc.msg.dbg(event_duration_limit)
+
+    
     config_dialog:delete()
     create_dialog()
 end
@@ -189,7 +229,7 @@ function create_config_dialog()
     config_dialog = vlc.dialog("Timestamper configuration")
 
     config_dialog:add_label("event labels (comma separated)", 1, 1, 1, 1)
-    event_labels_input = config_dialog:add_text_input(event_labels, 2, 1, 1, 1)
+    event_labels_input = config_dialog:add_text_input(event_labels_str, 2, 1, 1, 1)
 
     config_dialog:add_label("overall duration limit (seconds)", 1, 2, 1, 1)
     overall_duration_limit_input = config_dialog:add_text_input(overall_duration_limit, 2, 2, 1, 1)
