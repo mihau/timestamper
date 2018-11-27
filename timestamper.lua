@@ -31,6 +31,7 @@ html_content = ""
 
 
 function experiment_start()
+    osd_channel_id = vlc.osd.channel_register()
     local input = vlc.object.input()
     local current_time = vlc.var.get(input, "time")
     experiment_start_time = current_time
@@ -193,7 +194,6 @@ end
 function activate()
     vlc.msg.dbg("timestamper starts")
     create_dialog()
-    osd_channel_id = vlc.osd.channel_register()
 end
 
 function deactivate()
