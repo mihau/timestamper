@@ -35,6 +35,7 @@ event_labels = {}
 overall_duration_limit = 0
 event_duration_limit = 0
 
+button_functions = {}
 -- TODO: finish compensation
 
 
@@ -172,6 +173,15 @@ function export_to_csv()
     end
     io.close()
 end
+function partial(f, arg)
+    return function()
+        return f(arg)
+    end
+end
+
+function dummy_button(n)
+    vlc.msg.dbg(n)
+end
 
 function create_dialog()
     dialog = vlc.dialog("Timestamper")
@@ -179,13 +189,22 @@ function create_dialog()
     dialog:add_button("export to csv", export_to_csv, 2, 1, 1, 1)
     dialog:add_label("Filename suffix", 1, 2, 1, 1)
     filename_suffix_input = dialog:add_text_input(filename_suffix, 2, 2, 1, 1)
-    dialog:add_button("object 1 event", object_one_interaction, 1, 3, 1, 1)
-    dialog:add_button("object 2 event", object_two_interaction, 2, 3, 1, 1)
-    -- html_dialog = dialog:add_html("", 1, 4, 1, 5)
-    event_list_dialog = dialog:add_list({})
-    dialog:add_button("delete selected events", delete_events, 2, 4, 1, 1)
 
-end
+    for i = 1,table.getn(event_labels),1
+    do
+        fun = partial(object_interaction, i)
+        table.insert(button_functions, fun)
+        dialog:add_button(i.." "..event_labels[i], fun, 3, i, 1, 1)
+        vlc.msg.dbg(i)
+    end
+    -- dialog:add_button("object 1 event", object_one_interaction, 1, 3, 1, 1)
+    -- dialog:add_button("object 2 event", object_two_interaction, 2, 3, 1, 1)
+    -- -- html_dialog = dialog:add_html("", 1, 4, 1, 5)
+    event_list_dialog = dialog:add_list({})
+    -- dialog:add_button("delete selected events", delete_events, 2, 4, 1, 1)
+end 
+
+-- tools
 
 function split(inputstr, sep)
         if sep == nil then
@@ -209,7 +228,9 @@ function serialize(t)
     end
     return string.format("{ %s }", table.concat(serializedValues, ', ') )
 end
+-- end tools
 
+-- begin configuration
 function apply_configuration()
     event_labels_str = event_labels_input:get_text()
     overall_duration_limit = tonumber(overall_duration_limit_input:get_text())
@@ -239,6 +260,7 @@ function create_config_dialog()
 
     config_dialog:add_button("Apply", apply_configuration, 3, 1, 1, 1)
 end
+-- end configuration
 
 
 function key_press( var, old, new, data )
