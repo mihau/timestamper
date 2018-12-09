@@ -15,7 +15,7 @@ timestamper
 	}
 end
 
-duration_limit = 20.0*1000000
+duration_limit = 0.0
 
 events = {}
 event_spans = {} -- stores spans
@@ -32,8 +32,8 @@ html_content = ""
 event_labels_str = ""
 event_labels = {}
 
-overall_duration_limit = 0
-event_duration_limit = 0
+overall_duration_limit = 0.0
+event_duration_limit = 0.0
 
 button_functions = {}
 -- TODO: finish compensation
@@ -128,10 +128,12 @@ function object_interaction(object_id)
         object_states[object_id]["begin"] = current_time
     end
 
-    if event_duration_sum > duration_limit then
-        print(osd_channel_id)
-        local duration_limit_seconds = duration_limit / 1000000
-        vlc.osd.message("reached duration limit of "..duration_limit_seconds.."s", osd_channel_id, "bottom-right")
+    if duration_limit > 0.0 then
+        if event_duration_sum > duration_limit then
+            print(osd_channel_id)
+            local duration_limit_seconds = duration_limit / 1000000
+            vlc.osd.message("reached duration limit of "..duration_limit_seconds.."s", osd_channel_id, "bottom-right")
+        end
     end
 
 end
@@ -235,6 +237,8 @@ function apply_configuration()
     event_labels_str = event_labels_input:get_text()
     overall_duration_limit = tonumber(overall_duration_limit_input:get_text())
     event_duration_limit = tonumber(event_duration_limit_input:get_text())
+
+    duration_limit = event_duration_limit * 1000000
 
     event_labels = split(event_labels_str, ",") 
     vlc.msg.dbg(serialize(event_labels))
